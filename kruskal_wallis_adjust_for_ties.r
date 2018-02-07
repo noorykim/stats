@@ -1,3 +1,5 @@
+# Example from Deborah Rumsey (2009), ch. 19
+
 # Kruskal-Wallis test statistic, without adjusting for ties
 # There were 27 scores altogether, 9 each from 3 groups
 kw = 12/(27*28)*(159^2/9+149.5^2/9+69.5^2/9)-3*28
