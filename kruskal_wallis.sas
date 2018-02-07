@@ -1,6 +1,7 @@
 /*Kruskal-Wallis test*/
 /*- non-parametric test*/
 /*- to compare ranks for 3 groups or more*/
+/*- can be followed by pairwise group comparisons using the Wilcoxon rank sum test (aka Mann-Whitney test)*/
 
 /*Deborah Rumsey (2009), ch. 19*/
 data ratings;
