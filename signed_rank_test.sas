@@ -1,5 +1,6 @@
 /*signed rank test*/
 /*- matched pair data*/
+/*- H_0: median change is zero*/
 
 /*Deborah Rumsey 2009, ch 17*/
 data wtloss;
@@ -15,6 +16,8 @@ data wtloss;
   diff = after - before;
 run;
 
+/*note: p-value is two sided*/
+/*- to get one-sided p-value, divide by 2*/
 proc univariate data=wtloss;
   var diff;
 run;
