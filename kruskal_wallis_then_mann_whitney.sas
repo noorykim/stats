@@ -2,14 +2,16 @@
 
 /*Kruskal-Wallis test*/
 /*- to compare ranks for 3 groups or more*/
-/*- can be followed by pairwise group comparisons using the Wilcoxon rank sum test (aka Mann-Whitney test)*/
+/*  - H_0: all groups have the same median*/
 /*- assumptions/conditions: */
 /*  - samples from different populations are independent*/
 /*  - population distributions have same shape and amount of spread*/
 /*- test statistic distribution: chi-square with k-1 df, where k = # of groups*/
+/*- can be followed by pairwise group comparisons using the Wilcoxon rank sum test (aka Mann-Whitney test)*/
 
 /*Mann-Whitney test*/
 /*- to compare ranks for 2 groups*/
+/*  - H_0: the two groups have the same median*/
 
 /*Deborah Rumsey (2009), ch. 19*/
 data ratings;
