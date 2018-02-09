@@ -34,7 +34,7 @@ run;
 
 	data _null_;
 		set temp2;
-		call symput('p', _BIN_);
+		call symputx('p', _BIN_);
 
 /*		length _lcl _ucl _ci _lcl_pct _ucl_pct _ci_pct $50;*/
 		if 0 le XL_BIN le 1 then
@@ -50,8 +50,8 @@ run;
 			_lcl_pct = "NA";
 		end;
 
-		call symput('LCL', _lcl);
-		call symput('LCL_PCT', _lcl_pct);
+		call symputx('LCL', _lcl);
+		call symputx('LCL_PCT', _lcl_pct);
 
 		if 0 le XU_BIN le 1 then
 			do;
@@ -66,12 +66,12 @@ run;
 			_ucl_pct = "NA";
 		end;
 
-		call symput('UCL', _ucl);
-		call symput('UCL_PCT', _ucl_pct);
+		call symputx('UCL', _ucl);
+		call symputx('UCL_PCT', _ucl_pct);
 		_ci     = '(' || strip(_lcl) || ', ' || strip(_ucl) || ')';
 		_ci_pct = '(' || strip(_lcl_pct) || ', ' || strip(_ucl_pct) || ')';
-		call symput('CI', _ci);
-		call symput('CI_PCT', _ci_pct);
+		call symputx('CI', _ci);
+		call symputx('CI_PCT', _ci_pct);
 	run;
 
 %mend exbinci;
