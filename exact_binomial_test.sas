@@ -1,4 +1,4 @@
-/* %_ExactBinomialTest:
+/* Inner Macro: %__ExactBinomialTest:
 	Input parameters:
 		np = # of those counted in numerator; # yeses
 		n = # in denominator; sample size
@@ -38,7 +38,7 @@
 	/*calculate proportion and confidence interval*/
 	proc freq data=_freqin;
 		weight wt / zeros;	
-		tables group / binomial (exact) alpha=0.05;
+		tables group / binomial (exact) alpha=&alpha;
 		output out=_freqout binomial;
 	run;
 	ods exclude none;
@@ -70,39 +70,66 @@
 			ucl_pct = strip(put(XU_BIN, percent9.&ndecimals));
 			end;
 		else do;
-			_ucl     = "NA";
-			_ucl_pct = "NA";
+			ucln = .;
+			ucl = "NA";
+			ucl_pct = "NA";
 		end;
-		call symputx('UCL', _ucl);
-		call symputx('UCL_PCT', _ucl_pct);
+		call symputx('UCLN', ucln);
+		call symputx('UCL', ucl);
+		call symputx('UCL_PCT', ucl_pct);
 
 		/*concatenate lower and upper bounds*/
-		_ci     = '(' || strip(_lcl) || ', ' || strip(_ucl) || ')';
-		_ci_pct = '(' || strip(_lcl_pct) || ', ' || strip(_ucl_pct) || ')';
-		call symputx('CI', _ci);
-		call symputx('CI_PCT', _ci_pct);
+		ci     = '(' || strip(lcl) || ', ' || strip(ucl) || ')';
+		ci_pct = '(' || strip(lcl_pct) || ', ' || strip(ucl_pct) || ')';
+		call symputx('CI', ci);
+		call symputx('CI_PCT', ci_pct);
 	run;
 
 %mend __ExactBinomialTest;
 
+
+/* Middle Function: _ExactBinomialTest() */
 proc fcmp outlib=work.funcs.pvals;
-	subroutine _ExactBinomialTest(np, n,  p, lcl $, ucl $, ci $);
-		outargs p, lcl, ucl, ci;
-		rc = run_macro('_ExactBinomialTest',  np, n,  p, lcl, ucl, ci);
+	subroutine _ExactBinomialTest(np, n,  p, lcln, ucln, lcl $, ucl $, ci $, ci_pct $);
+		outargs p, lcln, ucln, lcl, ucl, ci, ci_pct;
+		rc = run_macro('__ExactBinomialTest',  np, n,  p, lcln, ucln, lcl, ucl, ci, ci_pct);
 	endsub;
-
-/*	subroutine ExactBinomialTest_ci(np, n, ci $);*/
-/*		outargs ci;*/
-/*		rc = run_macro('_ExactBinomialTest', y, n, ci);*/
-/*	endsub;*/
-/**/
-/*	subroutine ExactBinomialTest_ci_pct(np, n, ci_pct $);*/
-/*		outargs ci_pct;*/
-/*		rc = run_macro('_ExactBinomialTest', np, n, ci_pct);*/
-/*	endsub;*/
 run;
-
 options cmplib=work.funcs;
+
+
+/* Outer Macro: %ExactBinomialTest
+	Input parameters:
+		inset = data set to input
+		countvar = inset column with # of yeses
+		ssvar = inset column with sample size
+		alpha = 1 - level of significance
+		ndecimals = # decimal places
+
+	Return values (returned as columns):
+		p = proportion of yeses (num)
+		lcln = lower confidence limit (num)
+		ucln = upper confidence limit (num)
+		lcl = lower confidence limit (char)
+		ucl = upper confidence limit (char)
+		ci = confidence interval decimals = (lcl, ucl)  (char)
+		ci_pct = confidence interval, percentages = (lcl%, ucl%)  (char)
+
+	Assumptions:
+	- Input data set 
+		- Each row has np and n
+*/
+%macro ExactBinomialTest(inset, countvar, ssvar, alpha=0.05, ndecimals=1);
+	data &inset;
+		set &inset;
+
+		/*initialize variables*/
+		length lcl ucl ci ci_pct $50;
+		call missing(p, lcln, ucln, lcl, ucl, ci, ci_pct);
+	
+		call _ExactBinomialTest(&countvar, &ssvar, p, lcln, ucln, lcl, ucl, ci, ci_pct);
+	run;
+%mend ExactBinomialTest;
 
 data test;
 	y = 2; n = 10; output;
@@ -111,23 +138,14 @@ data test;
 	y = 20; n = 110; output;
 run;
 
-data test;
-	set test;
-	length lcl ucl ci ci2 ci_pct $50;
-	call missing(p, lcl, ucl, ci, ci2, ci_pct);
-
-/*specify # decimal places*/
-	call symputx('ndecimals', 2);
-	call symputx('alpha', 0.10);
-
-	/*	initialize variables;*/
-	call ExactBinomialTest(y, n, p, lcl, ucl, ci);
-	call ExactBinomialTest_ci(y, n, ci2);
-	call ExactBinomialTest_ci_pct(y, n, ci_pct);
+%ExactBinomialTest(test, y, n);
+proc print data=&syslast (obs=10);
 run;
 
-
 /*Reference:
-On 'macro function sandwiches'
-https://support.sas.com/resources/papers/proceedings12/004-2012.pdf
+	On 'macro function sandwiches'
+	https://support.sas.com/resources/papers/proceedings12/004-2012.pdf
+
+	Rationale:
+	- FCMP functions don't allow the assigning of default values to parameters
 */
