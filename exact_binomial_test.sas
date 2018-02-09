@@ -1,5 +1,3 @@
-options symbolgen mprint mprintnest;
-
 /* Inner Macro: %__ExactBinomialTest:
 	Input parameters:
 		np = # of those counted in numerator; # yeses
@@ -90,6 +88,7 @@ options symbolgen mprint mprintnest;
 
 %mend __ExactBinomialTest;
 
+	/***************************************/
 
 /* Middle Function: _ExactBinomialTest() */
 proc fcmp outlib=work.funcs.pvals;
@@ -100,6 +99,7 @@ proc fcmp outlib=work.funcs.pvals;
 run;
 options cmplib=work.funcs;
 
+	/***************************************/
 
 /* Outer Macro: %ExactBinomialTest
 	Input parameters:
@@ -123,8 +123,10 @@ options cmplib=work.funcs;
 	  - This could be the output of, say, a PROC SQL step
 	- No columns in the inset have the same name as any of the return values
 */
-%macro ExactBinomialTest(inset, countvar, ssvar, alpha=0.05, ndecimals=1);
-	data &inset;
+%macro ExactBinomialTest(inset, countvar, ssvar, alpha=0.05, ndecimals=1, outset=);
+	%if &outset eq  %then %let outset = &inset;
+
+	data &outset;
 		set &inset;
 
 		/*initialize variables*/
@@ -135,6 +137,8 @@ options cmplib=work.funcs;
 	run;
 %mend ExactBinomialTest;
 
+	/***************************************/
+
 data test;
 	y = 2; n = 10; output;
 	y = 0; n = 10; output;
@@ -142,16 +146,22 @@ data test;
 	y = 20; n = 110; output;
 run;
 
-%ExactBinomialTest(test, y, n, alpha=0.10, ndecimals=2);
-
-
-
+%ExactBinomialTest(test, y, n, alpha=0.05, ndecimals=2);
 proc print data=&syslast (obs=10);
 run;
+
+%ExactBinomialTest(test, y, n, alpha=0.10, ndecimals=2);
+proc print data=&syslast (obs=10);
+run;
+
+	/***************************************/
 
 /*check scope of macro variables*/
 %put _user_;
 %put _local_;
+%put _global_;
+
+	/***************************************/
 
 /*Reference:
 	On 'macro function sandwiches'
