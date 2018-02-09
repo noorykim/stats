@@ -22,9 +22,9 @@
 
 	/*Input parameters - default values*/
 	%if &np eq . %then %let np = 0;
-	%if &n eq . %then	%let n = 0;
-	%if &alpha eq . %then	%let alpha = 0.05;
-	%if &ndecimals eq . %then	%let ndecimals = 1;
+	%if &n eq . %then %let n = 0;
+	%if &alpha eq . %then %let alpha = 0.05;
+	%if &ndecimals eq . %then %let ndecimals = 1;
 
 	/*# of no's*/
 	%let nq = %eval(&n - &np);
@@ -116,8 +116,7 @@ options cmplib=work.funcs;
 		ci_pct = confidence interval, percentages = (lcl%, ucl%)  (char)
 
 	Assumptions:
-	- Input data set 
-		- Each row has np and n
+	- Input data set is a summary data set, having a column for # yeses and a column for sample size
 */
 %macro ExactBinomialTest(inset, countvar, ssvar, alpha=0.05, ndecimals=1);
 	data &inset;
@@ -139,6 +138,7 @@ data test;
 run;
 
 %ExactBinomialTest(test, y, n);
+
 proc print data=&syslast (obs=10);
 run;
 
