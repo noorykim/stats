@@ -107,26 +107,27 @@ options cmplib=work.funcs;
 		ndecimals = # decimal places
 
 	Return values (returned as columns):
-		p = proportion of yeses (num)
-		lcln = lower confidence limit (num)
-		ucln = upper confidence limit (num)
-		lcl = lower confidence limit (char)
-		ucl = upper confidence limit (char)
-		ci = confidence interval decimals = (lcl, ucl)  (char)
-		ci_pct = confidence interval, percentages = (lcl%, ucl%)  (char)
+		_p = proportion of yeses (num)
+		_lcln = lower confidence limit (num)
+		_ucln = upper confidence limit (num)
+		_lcl = lower confidence limit (char)
+		_ucl = upper confidence limit (char)
+		_ci = confidence interval decimals = (lcl, ucl)  (char)
+		_ci_pct = confidence interval, percentages = (lcl%, ucl%)  (char)
 
 	Assumptions:
-	- Input data set is a summary data set, having a column for # yeses and a column for sample size
+	- Inset is a summary data set, having a column for # yeses and a column for sample size
+	- No columns in the inset have the same name as any of the return values
 */
 %macro ExactBinomialTest(inset, countvar, ssvar, alpha=0.05, ndecimals=1);
 	data &inset;
 		set &inset;
 
 		/*initialize variables*/
-		length lcl ucl ci ci_pct $50;
-		call missing(p, lcln, ucln, lcl, ucl, ci, ci_pct);
+		length _lcl _ucl _ci _ci_pct $50;
+		call missing(_p, _lcln, _ucln, _lcl, _ucl, _ci, _ci_pct);
 	
-		call _ExactBinomialTest(&countvar, &ssvar, p, lcln, ucln, lcl, ucl, ci, ci_pct);
+		call _ExactBinomialTest(&countvar, &ssvar, _p, _lcln, _ucln, _lcl, _ucl, _ci, _ci_pct);
 	run;
 %mend ExactBinomialTest;
 
@@ -137,7 +138,7 @@ data test;
 	y = 20; n = 110; output;
 run;
 
-%ExactBinomialTest(test, y, n);
+%ExactBinomialTest(test, y, n, alpha=0.10, ndecimals=2);
 
 proc print data=&syslast (obs=10);
 run;
