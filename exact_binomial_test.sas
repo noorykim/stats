@@ -117,7 +117,8 @@ options cmplib=work.funcs;
 		_ci_pct = confidence interval, percentages = (lcl%, ucl%)  (char)
 
 	Assumptions:
-	- Inset is a summary data set, having a column for # yeses and a column for sample size
+	- Inset is a data set with summary counts: a column for # yeses and a column for sample size
+	  - This could be the output of, say, a PROC SQL step
 	- No columns in the inset have the same name as any of the return values
 */
 %macro ExactBinomialTest(inset, countvar, ssvar, alpha=0.05, ndecimals=1);
