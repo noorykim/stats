@@ -1,18 +1,18 @@
+/*specify # decimal places*/
 data _null_;
 	call symputx('ndecimals', 1);
 run;
 
-%macro exbinci;
-/*	Fisher's exact test*/
-	%if &y eq . %then
-		%let y = 0;
+%macro _ExactBinomialTest;
+	/* Fisher's exact test
+			y, numerator, p, lcl, ucl, ci
+*/
 
-	%if &numerator eq . %then
-		%let numerator = 0;
-
+	%if &y eq . %then %let y = 0;
+	%if &numerator eq . %then	%let numerator = 0;
 	%let denom = %eval(&numerator - &y);
 
-	data temp;
+	data _temp;
 		yn=1;
 		wt=&y;
 		output;
@@ -23,20 +23,19 @@ run;
 
 	ods exclude all;
 
-	proc freq data=temp;
+	proc freq data=_temp;
 		weight wt / zeroes;
-
 		table yn / binomial (exact) alpha=0.05;
-			output out=temp2 binomial;
+			output out=_temp2 binomial;
 	run;
 
 	ods exclude none;
 
 	data _null_;
-		set temp2;
+		set _temp2;
 		call symputx('p', _BIN_);
 
-/*		length _lcl _ucl _ci _lcl_pct _ucl_pct _ci_pct $50;*/
+		/*		length _lcl _ucl _ci _lcl_pct _ucl_pct _ci_pct $50;*/
 		if 0 le XL_BIN le 1 then
 			do;
 				_lcl     = strip(put(XL_BIN, 8.&ndecimals));
@@ -74,23 +73,22 @@ run;
 		call symputx('CI_PCT', _ci_pct);
 	run;
 
-%mend exbinci;
-
+%mend _ExactBinomialTest;
 
 proc fcmp outlib=work.funcs.pvals;
-	subroutine exbin(y, numerator, p, lcl $, ucl $, ci $);
+	subroutine ExactBinomialTest(y, numerator, p, lcl $, ucl $, ci $);
 		outargs p, lcl, ucl, ci;
-		rc = run_macro('exbinci', y, numerator, p, lcl, ucl, ci);
+		rc = run_macro('_ExactBinomialTest', y, numerator, p, lcl, ucl, ci);
 	endsub;
 
-	subroutine exbin_ci(y, numerator, ci $);
+	subroutine ExactBinomialTest_ci(y, numerator, ci $);
 		outargs ci;
-		rc = run_macro('exbinci', y, numerator, ci);
+		rc = run_macro('_ExactBinomialTest', y, numerator, ci);
 	endsub;
 
-	subroutine exbin_ci_pct(y, numerator, ci_pct $);
+	subroutine ExactBinomialTest_ci_pct(y, numerator, ci_pct $);
 		outargs ci_pct;
-		rc = run_macro('exbinci', y, numerator, ci_pct);
+		rc = run_macro('_ExactBinomialTest', y, numerator, ci_pct);
 	endsub;
 run;
 
@@ -116,8 +114,8 @@ data test;
 	length lcl ucl ci ci2 ci_pct $50;
 	call missing(p, lcl, ucl, ci, ci2, ci_pct);
 
-/*	initialize variables;*/
-	call exbin(a1, n1, p, lcl, ucl, ci);
-	call exbin_ci(a1, n1, ci2);
-	call exbin_ci_pct(a1, n1, ci_pct);
+	/*	initialize variables;*/
+	call ExactBinomialTest(a1, n1, p, lcl, ucl, ci);
+	call ExactBinomialTest_ci(a1, n1, ci2);
+	call ExactBinomialTest_ci_pct(a1, n1, ci_pct);
 run;
