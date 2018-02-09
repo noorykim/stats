@@ -44,6 +44,7 @@
 	ods exclude none;
 
 	/*assign return values*/
+	/*note: no length statement needed for a _null_ data set*/
 	data _null_;
 		set _freqout;
 		call symputx('p', _BIN_);
