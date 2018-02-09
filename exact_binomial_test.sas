@@ -1,3 +1,5 @@
+options symbolgen mprint mprintnest;
+
 /* Inner Macro: %__ExactBinomialTest:
 	Input parameters:
 		np = # of those counted in numerator; # yeses
@@ -143,8 +145,13 @@ run;
 %ExactBinomialTest(test, y, n, alpha=0.10, ndecimals=2);
 
 
+
 proc print data=&syslast (obs=10);
 run;
+
+/*check scope of macro variables*/
+%put _user_;
+%put _local_;
 
 /*Reference:
 	On 'macro function sandwiches'
